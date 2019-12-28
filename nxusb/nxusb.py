@@ -4,12 +4,8 @@ import sys
 import os
 import shutil
 from timeit import default_timer as timer
-from .constants import *
+from .header import *
 from .webhandler import download_object
-
-NXUSB_VERSION_MAJOR = 0
-NXUSB_VERSION_MINOR = 0
-NXUSB_VERSION_PATCH = 1
 
 class unpackError(BaseException):
 	pass #Raised when there is an issue unpacking usb data
@@ -36,28 +32,70 @@ class usb_tool:
 			UsbMode.UsbMode_Ping.value : self.ping,
 
 			UsbMode.UsbMode_OpenFile.value : self.OpenFile,
+			UsbMode.UsbMode_OpenFileReadBytes.value : self.OpenFileReadBytes,
+			UsbMode.UsbMode_OpenFileWrite.value : self.OpenFileWrite,
+			UsbMode.UsbMode_OpenFileWriteBytes.value : self.OpenFileWriteBytes,
+			UsbMode.UsbMode_OpenFileAppend.value : self.OpenFileAppend,
+			UsbMode.UsbMode_OpenFileAppendBytes.value : self.OpenFileAppendBytes,
+
 			UsbMode.UsbMode_ReadFile.value : self.ReadFile,
 			UsbMode.UsbMode_WriteFile.value : self.WriteFile,
 			UsbMode.UsbMode_TouchFile.value : self.TouchFile,
 			UsbMode.UsbMode_DeleteFile.value : self.DeleteFile,
 			UsbMode.UsbMode_RenameFile.value : self.RenameFile,
 			UsbMode.UsbMode_GetFileSize.value : self.GetFileSize,
+			UsbMode.UsbMode_GetFileSizeFromPath.value : self.GetFileSizeFromPath,
+			UsbMode.UsbMode_IsFile.value : self.isFile,
 			UsbMode.UsbMode_CloseFile.value : self.CloseFile,
 
 			UsbMode.UsbMode_OpenDir.value : self.OpenDir,
 			UsbMode.UsbMode_ReadDir.value : self.ReadDir,
+			UsbMode.UsbMode_TouchDir.value : self.TouchDir,
 			UsbMode.UsbMode_DeleteDir.value : self.DeleteDir,
-			UsbMode.UsbMode_DeleteDirRecursively.value : self.DeleteDirRecursively,
+			# UsbMode.UsbMode_DeleteDirRecursively.value : self.DeleteDirRecursively,
 			UsbMode.UsbMode_GetDirTotal.value : self.GetDirTotal,
 			UsbMode.UsbMode_GetDirTotalRecursively.value : self.GetDirTotalRecursively,
-			UsbMode.UsbMode_RenameDir.value : self.RenameDir,
-			UsbMode.UsbMode_TouchDir.value : self.TouchDir,
+			UsbMode.UsbMode_RenameDir.value : self.RenameDir,                   
+		    UsbMode.UsbMode_GetDirSize.value :  self.GetDirSize,
+		    UsbMode.UsbMode_GetDirSizeRecursively.value :  self.GetDirSize,
+		    UsbMode.UsbMode_GetDirSizeFromPath.value :  self.GetDirSize,
+		    UsbMode.UsbMode_GetDirSizeFromPathRecursively.value :  self.GetDirSize,
+		    UsbMode.UsbMode_GetDirTotalFromPath.value : self.GetDirSize,
+		    UsbMode.UsbMode_GetDirTotalRecursivelyFromPath.value : self.GetDirSize,
+		    UsbMode.UsbMode_IsDir.value : self.isDir,
 
 			UsbMode.UsbMode_OpenDevice.value : self.OpenDevice,
 			UsbMode.UsbMode_ReadDevices.value : self.ReadDevices,
 			UsbMode.UsbMode_GetTotalDevices.value : self.GetTotalDevices,
 			UsbMode.UsbMode_GetWebDownload.value : self.GetWebDownload,
 		}
+
+	def OpenFileReadBytes(self, size, io_in):
+		raise notImplemented
+	def OpenFileWrite(self, size, io_in):
+		raise notImplemented
+	def OpenFileWriteBytes(self, size, io_in):
+		raise notImplemented
+	def OpenFileAppend(self, size, io_in):
+		raise notImplemented
+	def OpenFileAppendBytes(self, size, io_in):
+		raise notImplemented
+	def GetFileSizeFromPath(self, size, io_in):
+		raise notImplemented
+	def GetDirSize(self, size, io_in):
+		raise notImplemented
+	def GetDirTotal(self, size, io_in):
+		raise notImplemented
+	def GetDirTotalRecursively(self, size, io_in):
+		raise notImplemented
+	def RenameDir(self, size, io_in):
+		raise notImplemented
+	def OpenDevice(self, size, io_in):
+		raise notImplemented
+	def ReadDevices(self, size, io_in):
+		raise notImplemented
+	def GetTotalDevices(self, size, io_in):
+		raise notImplemented
 
 	def addUSBcommand(self, value, callback):
 		if not value in self.UsbModeMap.keys():
@@ -582,15 +620,6 @@ class usb_tool:
 	def DeleteDirRecursively(self, size, io_in):
 		return DeleteDir(size, io_in, recursive = True)
 
-	def GetDirTotal(self, size, io_in):
-		raise notImplemented
-
-	def GetDirTotalRecursively(self, size, io_in):
-		raise notImplemented
-
-	def RenameDir(self, size, io_in):
-		raise notImplemented
-
 	def TouchDir(self, size, io_in):
 		if io_in:
 			path_to_open = unpack_string(io_in, size)
@@ -621,15 +650,6 @@ class usb_tool:
 			status = UsbReturnCode.UsbReturnCode_FailedTouchDir.value
 
 		return status
-
-	def OpenDevice(self, size, io_in):
-		raise notImplemented
-
-	def ReadDevices(self, size, io_in):
-		raise notImplemented
-
-	def GetTotalDevices(self, size, io_in):
-		raise notImplemented
 
 	def GetWebDownload(self, size, io_in):
 		raise notImplemented
@@ -697,6 +717,7 @@ class usb_tool:
 		if not result == -1:
 			self.writeUSBReturnCode(result)
 
+
 # Usb Method Helpers
 def isFileOrDir(size, io_in, mode):
 	if not io_in:
@@ -711,11 +732,11 @@ def isFileOrDir(size, io_in, mode):
 		return UsbReturnCode.UsbReturnCode_Success.value
 
 	if os.path.isdir(path_to_open):
-		if mode is UsbMode.Usbmode_isDir.value
+		if mode is UsbMode.Usbmode_isDir.value:
 			return UsbReturnCode.UsbReturnCode_Success.value
 		return UsbReturnCode.UsbReturnCode_Failure.value
 	elif os.path.isfile(path_to_open):
-		if mode is UsbMode.Usbmode_isFile.value
+		if mode is UsbMode.Usbmode_isFile.value:
 			return UsbReturnCode.UsbReturnCode_Success.value
 		return UsbReturnCode.UsbReturnCode_Failure.value
 	else:
