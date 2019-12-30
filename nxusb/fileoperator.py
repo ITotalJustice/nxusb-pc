@@ -1,6 +1,6 @@
 from enum import Enum
 from .header import *
-import struct
+from .struct_unpacker import unpack_string, unpack_byte, unpack_unsigned_long_long
 import os
 
 class fileOperator:
@@ -206,16 +206,3 @@ class fileOperator:
 			except:
 				print("Failed to delete dir [recursive: {}]! ~ {}".format(recursive, e))
 			return UsbReturnCode.UsbReturnCode_FailedDeleteDir.value
-
-def unpack_string(data, size = None, silent = False):
-	try:
-		if size:
-			data = struct.unpack('<{}s'.format(size), data[0x0:size])[0]
-		else:
-			data = struct.unpack('<{}s'.format(len(data)), data)[0]
-		if not silent:
-			print("Unpacked string {}".format(data))
-		return data
-	except Exception as e:
-		print("Error unpacking data to string.\n     Data: {}\n     Size: {}\n     Error: {}".format(data, size, e))
-		raise unpackError

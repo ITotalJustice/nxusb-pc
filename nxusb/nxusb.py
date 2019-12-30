@@ -7,6 +7,7 @@ from timeit import default_timer as timer
 from .header import *
 from .webhandler import download_object
 from .fileoperator import fileOperator
+from .struct_unpacker import unpack_string, unpack_byte, unpack_unsigned_long_long
 
 class usb_tool:
 	def __init__(self):
@@ -569,30 +570,6 @@ class usb_tool:
 			result = function(size, data)
 		if not result == -1:
 			self.writeUSBReturnCode(result)
-
-# Unpack Functions
-def unpack_unsigned_long_long(data):
-	try:
-		return struct.unpack('<Q', data)[0]
-	except Exception as e:
-		print("Error unpacking data to unsigned long long.\n     Data: {}\n     Error: {}".format(data, e))
-		raise unpackError
-
-def unpack_string(data, size = None, silent = False):
-	try:
-		if size:
-			data = struct.unpack('<{}s'.format(size), data[0x0:size])[0]
-		else:
-			data = struct.unpack('<{}s'.format(len(data)), data)[0]
-		if not silent:
-			print("Unpacked string {}".format(data))
-		return data
-	except Exception as e:
-		print("Error unpacking data to string.\n     Data: {}\n     Size: {}\n     Error: {}".format(data, size, e))
-		raise unpackError
-
-def unpack_byte(data):
-	return struct.unpack('<B', data)[0]
 
 #Endpoint functions
 def _get_endpoint(direction, cfg):
