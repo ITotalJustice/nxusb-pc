@@ -1,4 +1,3 @@
-
 from enum import Enum
 
 SWITCH_VENDOR_ID = 0x057E
@@ -7,6 +6,17 @@ NXUSB_MAGIC = 0x4E58555342
 NXUSB_VERSION_MAJOR = 0
 NXUSB_VERSION_MINOR = 0
 NXUSB_VERSION_PATCH = 1
+
+class unpackError(BaseException):
+	pass #Raised when there is an issue unpacking usb data
+class overlapError(BaseException):
+	pass #Raised when usb command values overlap
+class usbError(BaseException):
+	pass #Raised when there is an issue with reading or writing usb
+class fileError(BaseException):
+	pass #Raised whene there is an issue with interacting with a file
+class notImplemented(BaseException):
+	pass #Raised when an unimplemented method is called
 
 class UsbMode(Enum):
 	UsbMode_Exit                    	= 0x0
